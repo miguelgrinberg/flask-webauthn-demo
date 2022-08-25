@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Login with a Security Key</h2>
+<form method="POST" class="mb-3" id="form">
+  <input type="hidden" name="credential" id="credential">
+</form>
+<p>Or go <a href="{{ url_for('main.index') }}">back</a>.</p>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  async function login() {
+    let options = JSON.parse('{{ options|safe }}');
+    options.challenge = Uint8Array.from(atob(options.challenge.replace(/_/g, '/').replace(/-/g, '+')), c => c.charCodeAt(0));
+    for (let i = 0; i < options.allowCredentials.length; i++) {
+      options.allowCredentials[i].id = Uint8Array.from(atob(options.allowCredentials[i].id.replace(/_/g, '/').replace(/-/g, '+')), c => c.charCodeAt(0));
+    }
+    let response;
+    try {
+        response = await navigator.credentials.get({publicKey: options});
+    } catch (e) {
+        console.log(e);
+        document.getElementById('form').submit();  // submit empty form to trigger error
+    }
+    const publicKeyCredential = {
+      id: response.id,
+      type: response.type,
+      rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(response.rawId))),
+      response: {
+        authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(response.response.authenticatorData))),
+        clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(response.response.clientDataJSON))),
+        signature: btoa(String.fromCharCode.apply(null, new Uint8Array(response.response.signature))),
+        userHandle: response.response.userHandle ? btoa(String.fromCharCode.apply(null, new Uint8Array(response.response.userHandle))) : null,
+      }
+    };
+    document.getElementById('credential').value = JSON.stringify(publicKeyCredential);
+    document.getElementById('form').submit();
+  }
+  login();
+</script>
+{% endblock %}

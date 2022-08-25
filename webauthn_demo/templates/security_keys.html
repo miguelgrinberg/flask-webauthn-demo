@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Security Keys</h2>
+  {% if current_user.keys != [] %}
+    <table class="table table-hover align-middle" style="width: auto;">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Last Use</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tobdy>
+        {% for key in current_user.keys %}
+        <tr>
+          <td>{{ key.name }}</td>
+          <td class="date" data-timestamp="{{ key.last_used }}"></td>
+          <td>
+            <form method="POST" action="{{ url_for('webauthn.delete') }}">
+              <input type="hidden" name="id" value="{{ key.id }}">
+              <button type="submit" class="btn btn-sm btn-danger">
+                {% include 'svg/trash.svg' %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tobdy>
+    </table>
+  {% else %}
+    <p>You have no security keys configured.</p>
+  {% endif %}
+  <p>
+    <a class="btn btn-primary" href="{{ url_for('webauthn.register') }}">
+      {% include 'svg/key.svg' %}
+      Add Security Key
+    </a>
+  </p>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    const dates = document.querySelectorAll('.date');
+    for (const date of dates) {
+      date.innerText = new Date(date.dataset.timestamp * 1000).toLocaleString();
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m %}
+
+{% block content %}
+<h2>Register</h2>
+<form method="POST" class="mb-3">
+  {{ m.form_field('username', 'Username') }}
+  {{ m.form_field('password', 'Password', type='password') }}
+  <button type="submit" class="btn btn-primary">Register</button>
+</form>
+<p>Or go <a href="{{ url_for('main.index') }}">Home</a>.</p>
+{% endblock %}</p>

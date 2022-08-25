@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  {% if current_user.is_anonymous %}
+    <h2>Hello, visitor!</h2>
+    <p>Not much to do here unless you <a href="{{ url_for('auth.login') }}">login</a>.</p>
+  {% else %}
+    <h2>Hello, {{ current_user.username }}!</h2>
+    <p>You are logged in!</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m %}
+
+{% block content %}
+<h2>Add a Security Key</h2>
+<form method="POST" class="mb-3" id="form">
+  {{ m.form_field('name', 'Key name', value=key_name) }}
+  <input type="hidden" name="credential" id="credential">
+  <button class="btn btn-primary" id="register">Configure Security Key</button>
+</form>
+<p>Or go <a href="{{ url_for('webauthn.keys') }}">back</a>.</p>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+  async function register(ev) {
+    ev.preventDefault();
+    let options = JSON.parse('{{ options|safe }}');
+    options.challenge = Uint8Array.from(atob(options.challenge.replace(/_/g, '/').replace(/-/g, '+')), c => c.charCodeAt(0));
+    options.user.id = Uint8Array.from(atob(options.user.id.replace(/_/g, '/').replace(/-/g, '+')), c => c.charCodeAt(0));
+    for (let i = 0; i < options.excludeCredentials.length; i++) {
+      options.excludeCredentials[i].id = Uint8Array.from(atob(options.excludeCredentials[i].id.replace(/_/g, '/').replace(/-/g, '+')), c => c.charCodeAt(0));
+    }
+    let response;
+    try {
+        response = await navigator.credentials.create({publicKey: options});
+    }
+    catch (e) {
+        console.log(e);
+        document.getElementById('form').submit();  // submit empty form to trigger error
+    }
+    const publicKeyCredential = {
+      id: response.id,
+      type: response.type,
+      rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(response.rawId))),
+      response: {
+        clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(response.response.clientDataJSON))),
+        attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(response.response.attestationObject)))
+      }
+    };
+    document.getElementById('credential').value = JSON.stringify(publicKeyCredential);
+    document.getElementById('form').submit();
+  }
+  document.getElementById('register').addEventListener('click', register);
+</script>
+{% endblock %}

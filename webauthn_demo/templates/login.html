@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m %}
+
+{% block content %}
+<h2>Login</h2>
+<form method="POST" class="mb-3">
+  {{ m.form_field('username', 'Username') }}
+  {{ m.form_field('password', 'Password', type='password') }}
+  <button type="submit" class="btn btn-primary">Login</button>
+</form>
+<p>Or <a href="{{ url_for('auth.register') }}">register</a> a new account.</p>
+{% endblock %}
