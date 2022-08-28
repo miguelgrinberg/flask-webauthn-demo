@@ -1,14 +1,30 @@
 import time
-from flask import Blueprint, render_template, redirect, url_for, request, \
-    flash, session, current_app
+from flask import (
+    Blueprint,
+    render_template,
+    redirect,
+    url_for,
+    request,
+    flash,
+    session,
+    current_app,
+)
 from flask_login import login_required, login_user, current_user
-from webauthn import generate_registration_options, options_to_json, \
-    verify_registration_response, generate_authentication_options, \
-    verify_authentication_response
-from webauthn.helpers.structs import AuthenticatorSelectionCriteria, \
-    ResidentKeyRequirement, RegistrationCredential, \
-    UserVerificationRequirement, PublicKeyCredentialDescriptor, \
-    AuthenticationCredential
+from webauthn import (
+    generate_registration_options,
+    options_to_json,
+    verify_registration_response,
+    generate_authentication_options,
+    verify_authentication_response,
+)
+from webauthn.helpers.structs import (
+    AuthenticatorSelectionCriteria,
+    ResidentKeyRequirement,
+    RegistrationCredential,
+    UserVerificationRequirement,
+    PublicKeyCredentialDescriptor,
+    AuthenticationCredential,
+)
 from webauthn.helpers import bytes_to_base64url, base64url_to_bytes
 from .app import db
 from .models import load_user, Key
@@ -34,14 +50,18 @@ def register():
             authenticator_selection=AuthenticatorSelectionCriteria(
                 resident_key=ResidentKeyRequirement.DISCOURAGED,
             ),
-            exclude_credentials=[PublicKeyCredentialDescriptor(id=base64url_to_bytes(auth.credential_id)) for auth in current_user.keys],
-
+            exclude_credentials=[
+                PublicKeyCredentialDescriptor(id=base64url_to_bytes(auth.credential_id))
+                for auth in current_user.keys
+            ],
         )
         count = len(current_user.keys)
         session['challenge'] = options.challenge
-        return render_template('webauthn_register.html',
-                               options=options_to_json(options),
-                               key_name=f'Security key #{count + 1}')
+        return render_template(
+            'webauthn_register.html',
+            options=options_to_json(options),
+            key_name=f'Security key #{count + 1}',
+        )
     else:
         try:
             credential = RegistrationCredential.parse_raw(request.form['credential'])
@@ -74,7 +94,10 @@ def login():
     if request.method == 'GET':
         options = generate_authentication_options(
             rp_id='localhost',
-            allow_credentials=[PublicKeyCredentialDescriptor(id=base64url_to_bytes(auth.credential_id)) for auth in user.keys],
+            allow_credentials=[
+                PublicKeyCredentialDescriptor(id=base64url_to_bytes(auth.credential_id))
+                for auth in user.keys
+            ],
             user_verification=UserVerificationRequirement.DISCOURAGED,
         )
         session['challenge'] = options.challenge
@@ -84,7 +107,8 @@ def login():
         try:
             credential = AuthenticationCredential.parse_raw(request.form['credential'])
             key = db.session.scalar(
-                Key.select().where(Key.credential_id == credential.id))
+                Key.select().where(Key.credential_id == credential.id)
+            )
             if not key or key.user != user:
                 flash('Invalid')
                 return redirect(url_for('main.index'))
@@ -97,7 +121,7 @@ def login():
                 credential_current_sign_count=key.sign_count,
                 require_user_verification=False,
             )
-        except Exception as e:
+        except Exception:
             flash('Invalid key verification response')
             return redirect(url_for('main.index'))
         login_user(user)

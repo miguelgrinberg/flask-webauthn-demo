@@ -1,6 +1,6 @@
 import time
 import uuid
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from .app import db, login

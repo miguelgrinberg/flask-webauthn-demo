@@ -1,5 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, \
-    request, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_required, login_user, logout_user
 from .app import db
@@ -49,4 +48,3 @@ def logout():
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('main.index'))
-
